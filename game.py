@@ -76,6 +76,7 @@ def print_board(spots):
 
     for row_idx, row in enumerate(board):
         print(f"{row_idx:2} | " + ' '.join(f"{cell:{cell_width}}" for cell in row))
+        print(f"   | ")
 
 class SequenceEnv:
     def __init__(self):
