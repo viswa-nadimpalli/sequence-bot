@@ -1,0 +1,6 @@
+cloudpickle==3.0.0
+deck-of-cards==0.0.10
+gym==0.26.2
+gym-notices==0.0.8
+numpy==2.1.0
+PlayingCards==0.1.2
