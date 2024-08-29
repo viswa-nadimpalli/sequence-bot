@@ -59,7 +59,7 @@ spots = {
     'A♦': [(9,1), (7,6)],
 }
 
-def print_board(spots):
+def print_empty_board(spots):
     board = [['   ' for _ in range(10)] for _ in range (10)]
 
     for card, positions in spots.items():
@@ -81,26 +81,51 @@ def print_board(spots):
 class SequenceEnv:
     def __init__(self):
         self.board = np.zeros((10, 10), dtype=int)
+        self.hand = np.zeros(7, dtype=int)
         self.current_player = 1
         self.deck = Deck()
+        self.card_positions = self._initialize_card_positions()
+        self.state = np.zeros((10, 10), dtype=int)
 
+    def _initialize_card_positions(self):
+        board = np.full((10, 10), '', dtype=object)
+        for card, positions in spots.items():
+            for pos in positions:
+                row, col = pos
+                board[row, col] = card
+        return board
+    
     def reset(self):
-        self.board = np.zeros((10, 10), dtype=int)
-        self.hand = self.draw_hand()
+        self.board = self._initialize_card_positions()
+        self.state = np.zeros((10, 10), dtype=int)
         self.current_player = 1
         return self.board, self.hand
     
     def draw_hand(self):
-        return [self.deck.draw() for _ in range(7)]
+        return np.array([self.deck.draw() for _ in range(7)])
     
     def play(self, hand, idx, play):
-        hand[idx] = self.deck.draw()
-        self.board[play[0]][play[1]] = self.current_player
+        card = hand[idx]
+        self.state[play[0]][play[1]] = self.current_player
+        hand[idx] = None
         self.current_player *= -1
         return hand
     
-    def check_win_condition(self):
-        return False
+    def print_board(self):
+        cell_width = max(len(card) for card in spots.keys()) + 1
+        header = "    " + "   ".join(f"{i:2}" for i in range(10))
+        print(header)
+        print("   " + "+" + "-" * (len(header) - 2) + "+")
+        
+        for row_idx in range(10):
+            row_display = []
+            for col_idx in range(10):
+                if self.state[row_idx][col_idx] == 0:
+                    row_display.append(f"{self.board[row_idx][col_idx]:{cell_width}}")
+                else:
+                    row_display.append(f"<{self.state[row_idx][col_idx]}>".center(cell_width))
+            print(f"{row_idx:2} | " + ' '.join(row_display))
+        print("   " + "+" + "-" * (len(header) - 2) + "+")
     
 
 class Card:
@@ -143,9 +168,10 @@ class Deck:
 
 if __name__ == '__main__':
     seq = SequenceEnv()
+    seq.reset()
+    seq.print_board()
 
-    player1 = seq.draw_hand( )
+    hand = seq.draw_hand()
+    seq.play(hand, 1, (2,2))
+    seq.print_board()
 
-    print(seq.draw_hand())
-
-    print_board(spots)
